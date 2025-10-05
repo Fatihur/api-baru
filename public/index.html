@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Gateway API - Complete Documentation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1>📱 WhatsApp Gateway API</h1>
+            <div class="nav-links">
+                <a href="#home">Home</a>
+                <a href="#admin">Admin</a>
+                <a href="#docs">Docs</a>
+                <a href="#test">Test</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <section id="home" class="hero">
+            <h2>Complete WhatsApp Gateway API</h2>
+            <p>50+ Endpoints | 8 Message Types | Full Baileys Coverage</p>
+            <div class="status-card" id="statusCard">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="statusText">Checking connection...</span>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Endpoints</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Message Types</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Group Features</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Coverage</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="admin" class="section">
+            <h2>🔑 Admin Panel</h2>
+            <div class="admin-panel">
+                <div class="admin-login" id="adminLogin">
+                    <div class="card">
+                        <h3>Admin Access</h3>
+                        <input type="password" id="adminKey" placeholder="Admin Key (default: admin123)" class="input">
+                        <button onclick="loginAdmin()" class="btn btn-primary">Login to Admin Panel</button>
+                    </div>
+                </div>
+                
+                <div class="admin-content" id="adminContent" style="display: none;">
+                    <div class="card">
+                        <h3>Generate New API Key</h3>
+                        <input type="text" id="appName" placeholder="Application Name (e.g., Mobile App)" class="input">
+                        <button onclick="generateApiKey()" class="btn btn-success">Generate API Key</button>
+                        <div id="newKeyResult"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Your API Keys</h3>
+                        <button onclick="loadApiKeys()" class="btn btn-primary">Refresh List</button>
+                        <div id="apiKeysList"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>WhatsApp Connection</h3>
+                        <div id="qrCode"></div>
+                        <button onclick="checkStatus()" class="btn btn-primary">Check Status / Get QR</button>
+                        <button onclick="logout()" class="btn btn-danger">Logout WhatsApp</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="docs" class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                <h2 style="margin: 0;">📚 Complete API Documentation</h2>
+                <button onclick="copyAllDocumentation(event)" class="btn btn-success" style="font-size: 0.9rem;">
+                    📋 Copy All as Markdown
+                </button>
+            </div>
+            
+            <div class="card">
+                <h3>Base URL</h3>
+                <div class="code-block">
+                    <pre><code>http://localhost:3000</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Authentication</h3>
+                <p>All endpoints require API key in header or query:</p>
+                <div class="code-block">
+                    <pre><code>// Header (Recommended)
+X-API-Key: your_api_key_here
+
+// Or Query Parameter
+?apikey=your_api_key_here</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showTab('messages')">📤 Messages</button>
+                <button class="tab-btn" onclick="showTab('interactive')">🎮 Interactive</button>
+                <button class="tab-btn" onclick="showTab('management')">💬 Management</button>
+                <button class="tab-btn" onclick="showTab('groups')">👥 Groups</button>
+                <button class="tab-btn" onclick="showTab('profile')">👤 Profile</button>
+                <button class="tab-btn" onclick="showTab('presence')">👁️ Presence</button>
+                <button class="tab-btn" onclick="showTab('incoming')">📥 Incoming</button>
+            </div>
+
+            <!-- Messages Tab -->
+            <div id="tab-messages" class="tab-content active">
+                <h3>📤 Message Sending (8 Types)</h3>
+                
+                <!-- Text Message -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/send-message</span>
+                    </div>
+                    <p>Send text message</p>
+                    <div class="code-block">
+                        <pre><code>POST http://localhost:3000/api/send-message
+Content-Type: application/json
+X-API-Key: your_api_key
+
+{
+  "number": "628123456789",
+  "message": "Hello World!"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <h4>JavaScript Example:</h4>
+                    <div class="code-block">
+                        <pre><code>fetch('http://localhost:3000/api/send-message', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'your_api_key'
+  },
+  body: JSON.stringify({
+    number: '628123456789',
+    message: 'Hello World!'
+  })
+}).then(res => res.json()).then(console.log);</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Image -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/send-image</span>
+                    </div>
+                    <p>Send image with caption</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "imageUrl": "https://picsum.photos/400",
+  "caption": "Check this image!"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Video -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/send-video</span>
+                    </div>
+                    <p>Send video with caption</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "videoUrl": "https://example.com/video.mp4",
+  "caption": "Watch this video"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Audio -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/send-audio</span>
+                    </div>
+                    <p>Send audio or voice note</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "audioUrl": "https://example.com/audio.mp3",
+  "ptt": true
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <small>💡 Set "ptt": true for voice note, false for audio file</small>
+                </div>
+
+                <!-- Document -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/send-document</span>
+                    </div>
+                    <p>Send document (PDF, Excel, Word, etc)</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "documentUrl": "https://example.com/invoice.pdf",
+  "fileName": "Invoice_2024.pdf",
+  "mimetype": "application/pdf"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Sticker -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/send-sticker</span>
+                    </div>
+                    <p>Send sticker (WebP format)</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "stickerUrl": "https://example.com/sticker.webp"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/send-location</span>
+                    </div>
+                    <p>Send GPS location</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "latitude": "-6.2088",
+  "longitude": "106.8456",
+  "name": "Monas",
+  "address": "Jakarta, Indonesia"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Contact -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/send-contact</span>
+                    </div>
+                    <p>Send contact card (vCard)</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "contactName": "John Doe",
+  "contactNumber": "628111222333"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Tab -->
+            <div id="tab-interactive" class="tab-content">
+                <h3>🎮 Interactive Messages</h3>
+                
+                <!-- Buttons -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/send-buttons</span>
+                    </div>
+                    <p>Send message with buttons (up to 3)</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "text": "Choose an option:",
+  "buttons": [
+    {"id": "btn1", "text": "Order Now"},
+    {"id": "btn2", "text": "Get Info"},
+    {"id": "btn3", "text": "Contact Us"}
+  ],
+  "footer": "Powered by API",
+  "imageUrl": "https://example.com/logo.jpg"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- List -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/send-list</span>
+                    </div>
+                    <p>Send list/menu message</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "text": "Our Menu",
+  "buttonText": "View Products",
+  "sections": [
+    {
+      "title": "Food",
+      "rows": [
+        {"title": "Nasi Goreng", "description": "Rp 20.000", "rowId": "p1"},
+        {"title": "Mie Goreng", "description": "Rp 18.000", "rowId": "p2"}
+      ]
+    },
+    {
+      "title": "Drinks",
+      "rows": [
+        {"title": "Es Teh", "description": "Rp 5.000", "rowId": "p3"},
+        {"title": "Es Jeruk", "description": "Rp 7.000", "rowId": "p4"}
+      ]
+    }
+  ],
+  "footer": "Best prices",
+  "title": "Menu List"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Poll -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/send-poll</span>
+                    </div>
+                    <p>Create a poll</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "question": "What's your favorite color?",
+  "options": ["Red", "Blue", "Green", "Yellow"]
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Management Tab -->
+            <div id="tab-management" class="tab-content">
+                <h3>💬 Message Management</h3>
+                
+                <!-- Reply -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/reply-message</span>
+                    </div>
+                    <p>Reply to a specific message</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "messageId": "3EB0C91D2B1234567890",
+  "text": "This is a reply"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Forward -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/forward-message</span>
+                    </div>
+                    <p>Forward message to another chat</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "toNumber": "628111222333",
+  "fromNumber": "628123456789",
+  "messageId": "3EB0C91D2B1234567890"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Delete -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/delete-message</span>
+                    </div>
+                    <p>Delete message</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "messageId": "3EB0C91D2B1234567890",
+  "forEveryone": true
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <small>💡 Set "forEveryone": true to delete for all, false for yourself only</small>
+                </div>
+
+                <!-- React -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/react-message</span>
+                    </div>
+                    <p>React to message with emoji</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "messageId": "3EB0C91D2B1234567890",
+  "emoji": "👍"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Mark as Read -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/mark-as-read</span>
+                    </div>
+                    <p>Mark message as read</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "messageId": "3EB0C91D2B1234567890"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Groups Tab -->
+            <div id="tab-groups" class="tab-content">
+                <h3>👥 Group Management (12 Features)</h3>
+                
+                <!-- Create Group -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/group/create</span>
+                    </div>
+                    <p>Create new WhatsApp group</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "name": "Project Team",
+  "participants": ["628123456789", "628111222333", "628999888777"]
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Add Participants -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/group/add-participants</span>
+                    </div>
+                    <p>Add members to group</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "groupJid": "120363...@g.us",
+  "participants": ["628123456789", "628111222333"]
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Remove Participants -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/group/remove-participants</span>
+                    </div>
+                    <p>Remove members from group</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "groupJid": "120363...@g.us",
+  "participants": ["628123456789"]
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Promote -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/group/promote</span>
+                    </div>
+                    <p>Promote members to admin</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "groupJid": "120363...@g.us",
+  "participants": ["628123456789"]
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Get Info -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span>/api/group/info/:groupJid</span>
+                    </div>
+                    <p>Get group metadata and participants</p>
+                    <div class="code-block">
+                        <pre><code>GET http://localhost:3000/api/group/info/120363...@g.us
+X-API-Key: your_api_key</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Update Subject -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/group/update-subject</span>
+                    </div>
+                    <p>Change group name</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "groupJid": "120363...@g.us",
+  "subject": "New Group Name"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Get Invite Link -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span>/api/group/invite-link/:groupJid</span>
+                    </div>
+                    <p>Get group invite link</p>
+                    <div class="code-block">
+                        <pre><code>GET http://localhost:3000/api/group/invite-link/120363...@g.us
+X-API-Key: your_api_key</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Tab -->
+            <div id="tab-profile" class="tab-content">
+                <h3>👤 Contact & Profile</h3>
+                
+                <!-- Check Number -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span>/api/check-number/:number</span>
+                    </div>
+                    <p>Check if number is registered on WhatsApp</p>
+                    <div class="code-block">
+                        <pre><code>GET http://localhost:3000/api/check-number/628123456789
+X-API-Key: your_api_key</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Get Profile Picture -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span>/api/profile-picture/:number</span>
+                    </div>
+                    <p>Get profile picture URL</p>
+                    <div class="code-block">
+                        <pre><code>GET http://localhost:3000/api/profile-picture/628123456789
+X-API-Key: your_api_key</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Update Status -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/update-profile-status</span>
+                    </div>
+                    <p>Update your status/about</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "status": "Available for work"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Block User -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/block-user</span>
+                    </div>
+                    <p>Block a user</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Presence Tab -->
+            <div id="tab-presence" class="tab-content">
+                <h3>👁️ Presence & Indicators</h3>
+                
+                <!-- Typing -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/send-typing</span>
+                    </div>
+                    <p>Show typing indicator</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "isTyping": true
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <small>💡 Set "isTyping": false to stop typing indicator</small>
+                </div>
+
+                <!-- Recording -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/send-recording</span>
+                    </div>
+                    <p>Show recording indicator</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "number": "628123456789",
+  "isRecording": true
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Set Presence -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/set-presence</span>
+                    </div>
+                    <p>Set your presence status</p>
+                    <div class="code-block">
+                        <pre><code>{
+  "type": "available"
+}</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <small>💡 Options: available, unavailable, composing, recording, paused</small>
+                </div>
+            </div>
+
+            <!-- Incoming Tab -->
+            <div id="tab-incoming" class="tab-content">
+                <h3>📥 Incoming Messages</h3>
+                
+                <!-- Get Messages -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <span>/api/incoming-messages</span>
+                    </div>
+                    <p>Get recent incoming messages (last 100)</p>
+                    <div class="code-block">
+                        <pre><code>GET http://localhost:3000/api/incoming-messages?limit=50
+X-API-Key: your_api_key</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                    <h4>JavaScript Example:</h4>
+                    <div class="code-block">
+                        <pre><code>fetch('http://localhost:3000/api/incoming-messages?limit=10', {
+  headers: { 'X-API-Key': 'your_api_key' }
+})
+.then(res => res.json())
+.then(data => {
+  data.messages.forEach(msg => {
+    console.log('From:', msg.from);
+    console.log('Message:', msg.message);
+  });
+});</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <!-- Clear Messages -->
+                <div class="endpoint-card">
+                    <div class="endpoint-header">
+                        <span class="method post">POST</span>
+                        <span>/api/clear-messages</span>
+                    </div>
+                    <p>Clear incoming message history</p>
+                    <div class="code-block">
+                        <pre><code>POST http://localhost:3000/api/clear-messages
+X-API-Key: your_api_key</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Language Examples -->
+            <div class="card">
+                <h3>🔧 Complete Examples in Different Languages</h3>
+                
+                <div class="lang-tabs">
+                    <button class="lang-tab active" onclick="showLang('js')">JavaScript</button>
+                    <button class="lang-tab" onclick="showLang('python')">Python</button>
+                    <button class="lang-tab" onclick="showLang('php')">PHP</button>
+                    <button class="lang-tab" onclick="showLang('curl')">cURL</button>
+                </div>
+
+                <div id="lang-js" class="lang-content active">
+                    <h4>JavaScript / Node.js</h4>
+                    <div class="code-block">
+                        <pre><code>const axios = require('axios');
+
+const API_URL = 'http://localhost:3000';
+const API_KEY = 'your_api_key_here';
+
+async function sendMessage(number, message) {
+  try {
+    const response = await axios.post(`${API_URL}/api/send-message`, {
+      number,
+      message
+    }, {
+      headers: { 'X-API-Key': API_KEY }
+    });
+    console.log('Success:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error:', error.response?.data || error.message);
+  }
+}
+
+// Usage
+sendMessage('628123456789', 'Hello from Node.js!');</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div id="lang-python" class="lang-content">
+                    <h4>Python</h4>
+                    <div class="code-block">
+                        <pre><code>import requests
+
+API_URL = 'http://localhost:3000'
+API_KEY = 'your_api_key_here'
+
+def send_message(number, message):
+    response = requests.post(
+        f'{API_URL}/api/send-message',
+        json={'number': number, 'message': message},
+        headers={'X-API-Key': API_KEY}
+    )
+    return response.json()
+
+# Usage
+result = send_message('628123456789', 'Hello from Python!')
+print(result)</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div id="lang-php" class="lang-content">
+                    <h4>PHP</h4>
+                    <div class="code-block">
+                        <pre><code><?php
+$apiUrl = 'http://localhost:3000';
+$apiKey = 'your_api_key_here';
+
+function sendMessage($number, $message) {
+    global $apiUrl, $apiKey;
+    
+    $ch = curl_init("$apiUrl/api/send-message");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        "X-API-Key: $apiKey"
+    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+        'number' => $number,
+        'message' => $message
+    ]));
+    
+    $response = curl_exec($ch);
+    curl_close($ch);
+    return json_decode($response);
+}
+
+// Usage
+$result = sendMessage('628123456789', 'Hello from PHP!');
+print_r($result);
+?></code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div id="lang-curl" class="lang-content">
+                    <h4>cURL</h4>
+                    <div class="code-block">
+                        <pre><code>curl -X POST http://localhost:3000/api/send-message \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
+  -d '{
+    "number": "628123456789",
+    "message": "Hello from cURL!"
+  }'</code></pre>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="test" class="section">
+            <h2>🧪 Test Your API</h2>
+            
+            <div class="card">
+                <h3>Quick Test - Send Message</h3>
+                <input type="text" id="testApiKey" placeholder="Your API Key" class="input">
+                <input type="text" id="testNumber" placeholder="Phone Number (628123456789)" class="input">
+                <textarea id="testMessage" placeholder="Your message..." class="input" rows="3"></textarea>
+                <button onclick="testSendMessage()" class="btn btn-success">Send Test Message</button>
+                <div id="result-send" class="result"></div>
+            </div>
+
+            <div class="card">
+                <h3>Test - Send Image</h3>
+                <input type="text" id="imageApiKey" placeholder="Your API Key" class="input">
+                <input type="text" id="imageNumber" placeholder="Phone Number (628123456789)" class="input">
+                <input type="text" id="imageUrl" placeholder="Image URL (https://picsum.photos/400)" class="input">
+                <input type="text" id="imageCaption" placeholder="Caption (optional)" class="input">
+                <button onclick="testSendImage()" class="btn btn-success">Send Test Image</button>
+                <div id="result-image" class="result"></div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 WhatsApp Gateway API - Complete Edition | 50+ Endpoints | Powered by Baileys</p>
+            <p><small>Built with ❤️ | 100% Baileys Coverage</small></p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
