@@ -12,6 +12,9 @@ class WhatsAppClient {
     this.connectionStatus = 'disconnected';
     this.messageHandlers = [];
     this.incomingMessages = [];
+    this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = 10;
+    this.baseReconnectDelay = 3000;
   }
 
   async initialize() {
@@ -21,7 +24,6 @@ class WhatsAppClient {
     this.sock = makeWASocket({
       version,
       auth: state,
-      printQRInTerminal: true,
       logger: pino({ level: 'silent' }),
       browser: ['WhatsApp Gateway', 'Chrome', '1.0.0']
     });
@@ -39,20 +41,35 @@ class WhatsAppClient {
 
       if (connection === 'close') {
         const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-        console.log('Connection closed. Reconnecting:', shouldReconnect);
+        const statusCode = lastDisconnect?.error?.output?.statusCode;
+        console.log(`Connection closed. Status: ${statusCode}, Should reconnect: ${shouldReconnect}`);
         
         if (shouldReconnect) {
-          this.connectionStatus = 'reconnecting';
-          await this.initialize();
+          if (this.reconnectAttempts < this.maxReconnectAttempts) {
+            this.reconnectAttempts++;
+            const delayMs = Math.min(this.baseReconnectDelay * Math.pow(2, this.reconnectAttempts - 1), 60000);
+            this.connectionStatus = 'reconnecting';
+            console.log(`Reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delayMs}ms...`);
+            
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+            await this.initialize();
+          } else {
+            console.error('Max reconnection attempts reached. Please restart manually.');
+            this.connectionStatus = 'failed';
+            this.isConnected = false;
+          }
         } else {
+          console.log('Logged out from WhatsApp');
           this.connectionStatus = 'logged_out';
           this.isConnected = false;
+          this.reconnectAttempts = 0;
         }
       } else if (connection === 'open') {
         console.log('WhatsApp connected successfully');
         this.isConnected = true;
         this.connectionStatus = 'connected';
         this.qr = null;
+        this.reconnectAttempts = 0;
       }
     });
 

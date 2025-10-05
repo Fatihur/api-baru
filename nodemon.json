@@ -1,0 +1,20 @@
+{
+  "watch": [
+    "server.js",
+    "whatsappClient.js",
+    "apiKeyManager.js",
+    "middleware.js",
+    "public/**/*"
+  ],
+  "ignore": [
+    "baileys_auth_info/**/*",
+    "api_keys.json",
+    "firebase-debug.log",
+    "node_modules/**/*",
+    "*.log",
+    "*.zip"
+  ],
+  "ext": "js",
+  "delay": 2000,
+  "verbose": true
+}

@@ -7,6 +7,9 @@ const API_KEYS_FILE = path.join(__dirname, 'api_keys.json');
 class ApiKeyManager {
   constructor() {
     this.apiKeys = this.loadApiKeys();
+    this.pendingSave = false;
+    this.saveInterval = null;
+    this.startAutoSave();
   }
 
   loadApiKeys() {
@@ -24,9 +27,22 @@ class ApiKeyManager {
   saveApiKeys() {
     try {
       fs.writeFileSync(API_KEYS_FILE, JSON.stringify(this.apiKeys, null, 2));
+      this.pendingSave = false;
     } catch (error) {
       console.error('Error saving API keys:', error);
     }
+  }
+
+  startAutoSave() {
+    this.saveInterval = setInterval(() => {
+      if (this.pendingSave) {
+        this.saveApiKeys();
+      }
+    }, 5000);
+  }
+
+  scheduleSave() {
+    this.pendingSave = true;
   }
 
   generateApiKey(name = 'Unnamed App') {
@@ -54,7 +70,7 @@ class ApiKeyManager {
 
     keyData.lastUsed = new Date().toISOString();
     keyData.requestCount++;
-    this.saveApiKeys();
+    this.scheduleSave();
     return true;
   }
 

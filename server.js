@@ -7,7 +7,7 @@ const apiKeyManager = require('./apiKeyManager');
 const { requireApiKey, requireAdminKey } = require('./middleware');
 
 const app = express();
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 3004;
 
 app.use(cors());
 app.use(bodyParser.json());
