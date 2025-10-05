@@ -78,6 +78,16 @@ app.post('/api/send-message', requireApiKey, async (req, res) => {
       ...result
     });
   } catch (error) {
+    if (error.code === 'WA_DISCONNECTED') {
+      return res.status(503).json({
+        success: false,
+        error: error.message,
+        code: 'WA_DISCONNECTED',
+        connectionStatus: error.status,
+        qr: error.qr,
+        message: 'WhatsApp is disconnected. Please check /api/status for current status and QR code if needed.'
+      });
+    }
     res.status(500).json({
       success: false,
       error: error.message

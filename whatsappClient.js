@@ -105,7 +105,11 @@ class WhatsAppClient {
 
   async sendMessage(number, message) {
     if (!this.isConnected) {
-      throw new Error('WhatsApp not connected');
+      const error = new Error('WhatsApp not connected');
+      error.code = 'WA_DISCONNECTED';
+      error.status = this.connectionStatus;
+      error.qr = this.qr;
+      throw error;
     }
 
     const formattedNumber = number.includes('@s.whatsapp.net') 
