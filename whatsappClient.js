@@ -5,7 +5,10 @@ const fs = require('fs');
 const path = require('path');
 
 class WhatsAppClient {
-  constructor() {
+  constructor(apiKey, sessionId = 'default') {
+    this.apiKey = apiKey;
+    this.sessionId = sessionId;
+    this.authPath = path.join(__dirname, 'baileys_auth_info', apiKey, sessionId);
     this.sock = null;
     this.qr = null;
     this.isConnected = false;
@@ -15,92 +18,133 @@ class WhatsAppClient {
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 10;
     this.baseReconnectDelay = 3000;
+    this.isInitializing = false;
   }
 
   async initialize() {
-    const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info');
-    const { version } = await fetchLatestBaileysVersion();
+    if (this.isInitializing) {
+      console.log(`[${this.apiKey}:${this.sessionId}] Already initializing, skipping...`);
+      return;
+    }
+    
+    this.isInitializing = true;
+    
+    try {
+      if (!fs.existsSync(this.authPath)) {
+        fs.mkdirSync(this.authPath, { recursive: true });
+      }
+      
+      const { state, saveCreds } = await useMultiFileAuthState(this.authPath);
+      const { version } = await fetchLatestBaileysVersion();
 
-    this.sock = makeWASocket({
-      version,
-      auth: state,
-      logger: pino({ level: 'silent' }),
-      browser: ['WhatsApp Gateway', 'Chrome', '1.0.0']
-    });
+      this.sock = makeWASocket({
+        version,
+        auth: state,
+        logger: pino({ level: 'silent' }),
+        browser: ['WhatsApp Gateway', 'Chrome', '1.0.0'],
+        printQRInTerminal: false,
+        syncFullHistory: false
+      });
 
-    this.sock.ev.on('creds.update', saveCreds);
+      this.sock.ev.on('creds.update', saveCreds);
 
     this.sock.ev.on('connection.update', async (update) => {
-      const { connection, lastDisconnect, qr } = update;
+      try {
+        const { connection, lastDisconnect, qr } = update;
 
-      if (qr) {
-        this.qr = await QRCode.toDataURL(qr);
-        this.connectionStatus = 'qr_ready';
-        console.log('QR Code generated');
-      }
+        if (qr) {
+          this.qr = await QRCode.toDataURL(qr);
+          this.connectionStatus = 'qr_ready';
+          console.log(`[${this.apiKey}:${this.sessionId}] QR Code generated`);
+        }
 
-      if (connection === 'close') {
+        if (connection === 'close') {
+        this.isInitializing = false;
         const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
         const statusCode = lastDisconnect?.error?.output?.statusCode;
-        console.log(`Connection closed. Status: ${statusCode}, Should reconnect: ${shouldReconnect}`);
+        console.log(`[${this.apiKey}:${this.sessionId}] Connection closed. Status: ${statusCode}, Should reconnect: ${shouldReconnect}`);
         
         if (shouldReconnect) {
           if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnectAttempts++;
             const delayMs = Math.min(this.baseReconnectDelay * Math.pow(2, this.reconnectAttempts - 1), 60000);
             this.connectionStatus = 'reconnecting';
-            console.log(`Reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delayMs}ms...`);
+            console.log(`[${this.apiKey}:${this.sessionId}] Reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delayMs}ms...`);
             
             await new Promise(resolve => setTimeout(resolve, delayMs));
-            await this.initialize();
+            try {
+              await this.initialize();
+            } catch (error) {
+              console.error(`[${this.apiKey}:${this.sessionId}] Reconnection failed:`, error.message);
+            }
           } else {
-            console.error('Max reconnection attempts reached. Please restart manually.');
+            console.error(`[${this.apiKey}:${this.sessionId}] Max reconnection attempts reached. Please restart manually.`);
             this.connectionStatus = 'failed';
             this.isConnected = false;
           }
         } else {
-          console.log('Logged out from WhatsApp');
+          console.log(`[${this.apiKey}:${this.sessionId}] Logged out from WhatsApp`);
           this.connectionStatus = 'logged_out';
           this.isConnected = false;
           this.reconnectAttempts = 0;
         }
-      } else if (connection === 'open') {
-        console.log('WhatsApp connected successfully');
-        this.isConnected = true;
-        this.connectionStatus = 'connected';
-        this.qr = null;
-        this.reconnectAttempts = 0;
+        } else if (connection === 'open') {
+          console.log(`[${this.apiKey}:${this.sessionId}] WhatsApp connected successfully`);
+          this.isConnected = true;
+          this.connectionStatus = 'connected';
+          this.qr = null;
+          this.reconnectAttempts = 0;
+          this.isInitializing = false;
+        }
+      } catch (error) {
+        console.error(`[${this.apiKey}:${this.sessionId}] Connection update error:`, error);
+        this.isInitializing = false;
       }
     });
 
-    this.sock.ev.on('messages.upsert', async ({ messages, type }) => {
-      for (const msg of messages) {
-        if (!msg.key.fromMe && type === 'notify') {
-          console.log('Received message:', msg.key.id);
-          this.incomingMessages.push({
-            id: msg.key.id,
-            from: msg.key.remoteJid,
-            fromMe: msg.key.fromMe,
-            timestamp: msg.messageTimestamp,
-            message: msg.message,
-            pushName: msg.pushName,
-            type: getContentType(msg.message)
-          });
-          
-          if (this.incomingMessages.length > 100) {
-            this.incomingMessages.shift();
-          }
-          
-          for (const handler of this.messageHandlers) {
-            try {
-              handler(msg);
-            } catch (error) {
-              console.error('Message handler error:', error);
+      this.sock.ev.on('messages.upsert', async ({ messages, type }) => {
+        try {
+          for (const msg of messages) {
+            if (!msg.key.fromMe && type === 'notify') {
+              console.log(`[${this.apiKey}:${this.sessionId}] Received message:`, msg.key.id);
+              this.incomingMessages.push({
+                id: msg.key.id,
+                from: msg.key.remoteJid,
+                fromMe: msg.key.fromMe,
+                timestamp: msg.messageTimestamp,
+                message: msg.message,
+                pushName: msg.pushName,
+                type: getContentType(msg.message)
+              });
+              
+              if (this.incomingMessages.length > 100) {
+                this.incomingMessages.shift();
+              }
+              
+              for (const handler of this.messageHandlers) {
+                try {
+                  handler(msg);
+                } catch (error) {
+                  console.error(`[${this.apiKey}:${this.sessionId}] Message handler error:`, error);
+                }
+              }
             }
           }
+        } catch (error) {
+          console.error(`[${this.apiKey}:${this.sessionId}] Messages upsert error:`, error);
         }
-      }
-    });
+      });
+
+      // Handle WebSocket errors
+      this.sock.ev.on('connection.error', (error) => {
+        console.error(`[${this.apiKey}:${this.sessionId}] Connection error:`, error);
+      });
+
+    } catch (error) {
+      this.isInitializing = false;
+      console.error(`[${this.apiKey}:${this.sessionId}] Initialize error:`, error);
+      throw error;
+    }
   }
 
   async sendMessage(number, message) {
@@ -523,8 +567,9 @@ class WhatsAppClient {
       await this.sock.logout();
       this.isConnected = false;
       this.connectionStatus = 'logged_out';
+      console.log(`[${this.apiKey}:${this.sessionId}] Logged out`);
     }
   }
 }
 
-module.exports = new WhatsAppClient();
+module.exports = WhatsAppClient;

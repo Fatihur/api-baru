@@ -1,0 +1,1104 @@
+{
+  "info": {
+    "name": "WhatsApp Gateway API - Complete Collection",
+    "description": "Complete API collection for WhatsApp Gateway with Multi-Session Support and File Upload\n\n**Features:**\n- 56+ Endpoints\n- Multi-Session Support\n- File Upload Support\n- Admin Management\n- Message Sending (8 types)\n- Interactive Messages\n- Group Management\n- And more!\n\n**Setup:**\n1. Import environment file\n2. Set your `api_key` and `admin_key` in environment\n3. Start testing!",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Admin - API Key Management",
+      "item": [
+        {
+          "name": "Generate API Key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('generated_api_key', response.apiKey);",
+                  "    pm.environment.set('api_key', response.apiKey);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Admin-Key",
+                "value": "{{admin_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Test Application\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/apikeys/generate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "apikeys", "generate"]
+            },
+            "description": "Generate new API key. Leave 'name' empty for random name."
+          }
+        },
+        {
+          "name": "List API Keys",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Admin-Key",
+                "value": "{{admin_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/apikeys",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "apikeys"]
+            },
+            "description": "Get all API keys with analytics"
+          }
+        },
+        {
+          "name": "Revoke API Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Admin-Key",
+                "value": "{{admin_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/apikeys/:key/revoke",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "apikeys", ":key", "revoke"],
+              "variable": [
+                {
+                  "key": "key",
+                  "value": "{{api_key}}"
+                }
+              ]
+            },
+            "description": "Revoke (deactivate) API key without deleting"
+          }
+        },
+        {
+          "name": "Delete API Key",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-Admin-Key",
+                "value": "{{admin_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/apikeys/:key",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "apikeys", ":key"],
+              "variable": [
+                {
+                  "key": "key",
+                  "value": "{{api_key}}"
+                }
+              ]
+            },
+            "description": "Delete API key and all its sessions"
+          }
+        },
+        {
+          "name": "Logout All Sessions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Admin-Key",
+                "value": "{{admin_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/logout/:apiKey",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "logout", ":apiKey"],
+              "variable": [
+                {
+                  "key": "apiKey",
+                  "value": "{{api_key}}"
+                }
+              ]
+            },
+            "description": "Logout all sessions for an API key"
+          }
+        },
+        {
+          "name": "Logout Specific Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Admin-Key",
+                "value": "{{admin_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"sales\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/logout/:apiKey",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "logout", ":apiKey"],
+              "variable": [
+                {
+                  "key": "apiKey",
+                  "value": "{{api_key}}"
+                }
+              ]
+            },
+            "description": "Logout specific session for an API key"
+          }
+        }
+      ],
+      "description": "Admin endpoints for managing API keys"
+    },
+    {
+      "name": "2. Connection & Session Management",
+      "item": [
+        {
+          "name": "Get Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/status?sessionId={{sessionId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "status"],
+              "query": [
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}"
+                }
+              ]
+            },
+            "description": "Check WhatsApp connection status for specific session"
+          }
+        },
+        {
+          "name": "Get QR Code",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/qr?sessionId={{sessionId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "qr"],
+              "query": [
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}"
+                }
+              ]
+            },
+            "description": "Get QR code for WhatsApp authentication"
+          }
+        },
+        {
+          "name": "List All Sessions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/sessions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sessions"]
+            },
+            "description": "Get all sessions for your API key"
+          }
+        },
+        {
+          "name": "Delete Session",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/sessions/:sessionId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sessions", ":sessionId"],
+              "variable": [
+                {
+                  "key": "sessionId",
+                  "value": "sales"
+                }
+              ]
+            },
+            "description": "Delete a specific session"
+          }
+        }
+      ],
+      "description": "Connection status and session management"
+    },
+    {
+      "name": "3. File Upload",
+      "item": [
+        {
+          "name": "Upload File (Get URL)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('uploaded_file_url', response.file.url);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "upload"]
+            },
+            "description": "Upload file and get URL for later use"
+          }
+        },
+        {
+          "name": "Upload & Send Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "number",
+                  "value": "{{test_number}}",
+                  "type": "text"
+                },
+                {
+                  "key": "caption",
+                  "value": "Image sent via direct upload!",
+                  "type": "text"
+                },
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/upload/send-image",
+              "host": ["{{base_url}}"],
+              "path": ["api", "upload", "send-image"]
+            },
+            "description": "Upload and send image directly"
+          }
+        },
+        {
+          "name": "Upload & Send Video",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "number",
+                  "value": "{{test_number}}",
+                  "type": "text"
+                },
+                {
+                  "key": "caption",
+                  "value": "Video sent via direct upload!",
+                  "type": "text"
+                },
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/upload/send-video",
+              "host": ["{{base_url}}"],
+              "path": ["api", "upload", "send-video"]
+            },
+            "description": "Upload and send video directly"
+          }
+        },
+        {
+          "name": "Upload & Send Audio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "number",
+                  "value": "{{test_number}}",
+                  "type": "text"
+                },
+                {
+                  "key": "ptt",
+                  "value": "true",
+                  "type": "text",
+                  "description": "true for voice note, false for audio file"
+                },
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/upload/send-audio",
+              "host": ["{{base_url}}"],
+              "path": ["api", "upload", "send-audio"]
+            },
+            "description": "Upload and send audio/voice note directly"
+          }
+        },
+        {
+          "name": "Upload & Send Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "number",
+                  "value": "{{test_number}}",
+                  "type": "text"
+                },
+                {
+                  "key": "fileName",
+                  "value": "Important Document.pdf",
+                  "type": "text",
+                  "description": "Optional custom filename"
+                },
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/upload/send-document",
+              "host": ["{{base_url}}"],
+              "path": ["api", "upload", "send-document"]
+            },
+            "description": "Upload and send document directly"
+          }
+        },
+        {
+          "name": "Upload & Send Sticker",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "WebP format"
+                },
+                {
+                  "key": "number",
+                  "value": "{{test_number}}",
+                  "type": "text"
+                },
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/upload/send-sticker",
+              "host": ["{{base_url}}"],
+              "path": ["api", "upload", "send-sticker"]
+            },
+            "description": "Upload and send sticker directly"
+          }
+        }
+      ],
+      "description": "File upload endpoints - Upload directly without external hosting"
+    },
+    {
+      "name": "4. Message Sending (URL-based)",
+      "item": [
+        {
+          "name": "Send Text Message",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.messageId) {",
+                  "        pm.environment.set('test_message_id', response.messageId);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"number\": \"{{test_number}}\",\n  \"message\": \"Hello World! This is a test message from WhatsApp Gateway API.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/send-message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "send-message"]
+            },
+            "description": "Send text message"
+          }
+        },
+        {
+          "name": "Send Image (URL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"number\": \"{{test_number}}\",\n  \"imageUrl\": \"https://picsum.photos/400/300\",\n  \"caption\": \"Random image from Lorem Picsum\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/send-image",
+              "host": ["{{base_url}}"],
+              "path": ["api", "send-image"]
+            },
+            "description": "Send image with URL"
+          }
+        },
+        {
+          "name": "Send Video (URL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"number\": \"{{test_number}}\",\n  \"videoUrl\": \"https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4\",\n  \"caption\": \"Sample video\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/send-video",
+              "host": ["{{base_url}}"],
+              "path": ["api", "send-video"]
+            },
+            "description": "Send video with URL"
+          }
+        },
+        {
+          "name": "Send Audio (URL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"number\": \"{{test_number}}\",\n  \"audioUrl\": \"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3\",\n  \"ptt\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/send-audio",
+              "host": ["{{base_url}}"],
+              "path": ["api", "send-audio"]
+            },
+            "description": "Send audio with URL. Set ptt:true for voice note"
+          }
+        },
+        {
+          "name": "Send Document (URL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"number\": \"{{test_number}}\",\n  \"documentUrl\": \"https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf\",\n  \"fileName\": \"Sample Document.pdf\",\n  \"mimetype\": \"application/pdf\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/send-document",
+              "host": ["{{base_url}}"],
+              "path": ["api", "send-document"]
+            },
+            "description": "Send document with URL"
+          }
+        },
+        {
+          "name": "Send Sticker (URL)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"number\": \"{{test_number}}\",\n  \"stickerUrl\": \"https://example.com/sticker.webp\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/send-sticker",
+              "host": ["{{base_url}}"],
+              "path": ["api", "send-sticker"]
+            },
+            "description": "Send sticker with URL (WebP format)"
+          }
+        },
+        {
+          "name": "Send Location",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"number\": \"{{test_number}}\",\n  \"latitude\": \"-6.2088\",\n  \"longitude\": \"106.8456\",\n  \"name\": \"Monas\",\n  \"address\": \"Jakarta, Indonesia\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/send-location",
+              "host": ["{{base_url}}"],
+              "path": ["api", "send-location"]
+            },
+            "description": "Send GPS location"
+          }
+        },
+        {
+          "name": "Send Contact",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"number\": \"{{test_number}}\",\n  \"contactName\": \"John Doe\",\n  \"contactNumber\": \"628111222333\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/send-contact",
+              "host": ["{{base_url}}"],
+              "path": ["api", "send-contact"]
+            },
+            "description": "Send contact card (vCard)"
+          }
+        }
+      ],
+      "description": "Message sending with URL-based media"
+    },
+    {
+      "name": "5. Interactive Messages",
+      "item": [
+        {
+          "name": "Send Buttons",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"number\": \"{{test_number}}\",\n  \"text\": \"Choose an option:\",\n  \"buttons\": [\n    {\"id\": \"btn1\", \"text\": \"Order Now\"},\n    {\"id\": \"btn2\", \"text\": \"Get Info\"},\n    {\"id\": \"btn3\", \"text\": \"Contact Us\"}\n  ],\n  \"footer\": \"Powered by WhatsApp Gateway API\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/send-buttons",
+              "host": ["{{base_url}}"],
+              "path": ["api", "send-buttons"]
+            },
+            "description": "Send button message (up to 3 buttons)"
+          }
+        },
+        {
+          "name": "Send List",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"number\": \"{{test_number}}\",\n  \"text\": \"Our Product Menu\",\n  \"buttonText\": \"View Menu\",\n  \"sections\": [\n    {\n      \"title\": \"Food\",\n      \"rows\": [\n        {\"title\": \"Nasi Goreng\", \"description\": \"Rp 20.000\", \"rowId\": \"p1\"},\n        {\"title\": \"Mie Goreng\", \"description\": \"Rp 18.000\", \"rowId\": \"p2\"}\n      ]\n    },\n    {\n      \"title\": \"Drinks\",\n      \"rows\": [\n        {\"title\": \"Es Teh\", \"description\": \"Rp 5.000\", \"rowId\": \"p3\"},\n        {\"title\": \"Es Jeruk\", \"description\": \"Rp 7.000\", \"rowId\": \"p4\"}\n      ]\n    }\n  ],\n  \"footer\": \"Select your order\",\n  \"title\": \"Menu\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/send-list",
+              "host": ["{{base_url}}"],
+              "path": ["api", "send-list"]
+            },
+            "description": "Send list/menu message"
+          }
+        },
+        {
+          "name": "Send Poll",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"number\": \"{{test_number}}\",\n  \"question\": \"What's your favorite color?\",\n  \"options\": [\"Red\", \"Blue\", \"Green\", \"Yellow\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/send-poll",
+              "host": ["{{base_url}}"],
+              "path": ["api", "send-poll"]
+            },
+            "description": "Send poll message"
+          }
+        }
+      ],
+      "description": "Interactive message types"
+    },
+    {
+      "name": "6. Message Management",
+      "item": [
+        {
+          "name": "Reply to Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"number\": \"{{test_number}}\",\n  \"messageId\": \"{{test_message_id}}\",\n  \"text\": \"This is a reply to your message\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reply-message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reply-message"]
+            },
+            "description": "Reply to specific message"
+          }
+        },
+        {
+          "name": "Forward Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"toNumber\": \"628111222333\",\n  \"fromNumber\": \"{{test_number}}\",\n  \"messageId\": \"{{test_message_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/forward-message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "forward-message"]
+            },
+            "description": "Forward message to another chat"
+          }
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"number\": \"{{test_number}}\",\n  \"messageId\": \"{{test_message_id}}\",\n  \"forEveryone\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/delete-message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "delete-message"]
+            },
+            "description": "Delete message (for everyone or just you)"
+          }
+        },
+        {
+          "name": "React to Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"number\": \"{{test_number}}\",\n  \"messageId\": \"{{test_message_id}}\",\n  \"emoji\": \"👍\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/react-message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "react-message"]
+            },
+            "description": "React to message with emoji"
+          }
+        },
+        {
+          "name": "Mark as Read",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"number\": \"{{test_number}}\",\n  \"messageId\": \"{{test_message_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/mark-as-read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "mark-as-read"]
+            },
+            "description": "Mark message as read"
+          }
+        }
+      ],
+      "description": "Message management operations"
+    },
+    {
+      "name": "7. Incoming Messages",
+      "item": [
+        {
+          "name": "Get Incoming Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/incoming-messages?limit=50&sessionId={{sessionId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "incoming-messages"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}"
+                }
+              ]
+            },
+            "description": "Get recent incoming messages"
+          }
+        },
+        {
+          "name": "Clear Incoming Messages",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/clear-messages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "clear-messages"]
+            },
+            "description": "Clear incoming messages history"
+          }
+        }
+      ],
+      "description": "Incoming message operations"
+    }
+  ]
+}

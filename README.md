@@ -2,17 +2,76 @@
 
 🚀 **Full-Featured WhatsApp Gateway** dengan sistem autentikasi API Key menggunakan Baileys
 
+## 🎯 Multi-Session Architecture
+
+**Fitur Unggulan**: 1 API Key bisa manage multiple WhatsApp sessions!
+
+- ✅ **Multiple Sessions per API Key**: Satu API key bisa connect banyak nomor WhatsApp
+- ✅ **Session Isolation**: Setiap session punya QR code dan storage terpisah
+- ✅ **Unlimited Scale**: Tambahkan koneksi WhatsApp tanpa batas
+- ✅ **Easy Management**: Kelola semua session dengan satu API key
+
+### Cara Kerja
+
+#### Default Session (Otomatis)
+```javascript
+// Tanpa sessionId = menggunakan session 'default'
+POST /api/send-message
+Headers: X-API-Key: wa_abc123
+Body: {
+  "number": "628123456789",
+  "message": "Hello"
+}
+```
+
+#### Multiple Sessions (Manual)
+```javascript
+// Session 1: WhatsApp untuk Sales
+POST /api/send-message
+Headers: X-API-Key: wa_abc123
+Body: {
+  "sessionId": "sales",
+  "number": "628123456789",
+  "message": "Hello from Sales"
+}
+
+// Session 2: WhatsApp untuk Support
+POST /api/send-message
+Headers: X-API-Key: wa_abc123
+Body: {
+  "sessionId": "support",
+  "number": "628123456789",
+  "message": "Hello from Support"
+}
+```
+
+### Storage Structure
+```
+baileys_auth_info/
+  └── wa_abc123/           # API Key
+      ├── default/         # Session default
+      ├── sales/           # Session sales
+      └── support/         # Session support
+```
+
 ## ✨ Fitur Lengkap (50+ Endpoints)
 
 ### 📤 Message Sending
 - ✅ Text messages
-- ✅ Image dengan caption
-- ✅ Video dengan caption
-- ✅ Audio & Voice notes (PTT)
-- ✅ Documents (PDF, Excel, Word, dll)
-- ✅ Stickers
+- ✅ Image dengan caption (URL or **Direct Upload**)
+- ✅ Video dengan caption (URL or **Direct Upload**)
+- ✅ Audio & Voice notes (PTT) (URL or **Direct Upload**)
+- ✅ Documents (PDF, Excel, Word, dll) (URL or **Direct Upload**)
+- ✅ Stickers (URL or **Direct Upload**)
 - ✅ Location sharing
 - ✅ Contact cards (vCard)
+
+### 📤 **File Upload Support**
+- ✅ **Direct file upload** tanpa perlu hosting eksternal
+- ✅ Support images, videos, audio, documents, stickers
+- ✅ Max file size: 50MB
+- ✅ Auto file validation
+- ✅ 6 upload endpoints tersedia
 
 ### 🎮 Interactive Messages
 - ✅ Button messages
@@ -93,7 +152,15 @@ ADMIN_KEY=your_secret_admin_key
 
 ## 📚 API Endpoints
 
-**Total: 50+ Endpoints** untuk semua fitur WhatsApp
+**Total: 56+ Endpoints** untuk semua fitur WhatsApp
+
+### File Upload (6 endpoints) ⭐ NEW!
+- POST `/api/upload` - Upload file saja, get URL
+- POST `/api/upload/send-image` - Upload & kirim image
+- POST `/api/upload/send-video` - Upload & kirim video
+- POST `/api/upload/send-audio` - Upload & kirim audio
+- POST `/api/upload/send-document` - Upload & kirim document
+- POST `/api/upload/send-sticker` - Upload & kirim sticker
 
 ### Message Sending (8 endpoints)
 - POST `/api/send-message` - Text
@@ -156,11 +223,36 @@ ADMIN_KEY=your_secret_admin_key
 
 Memerlukan admin key di header: `X-Admin-Key: admin123`
 
-- POST /api/admin/apikeys/generate - Generate API key baru
-- GET /api/admin/apikeys - List semua API keys
-- DELETE /api/admin/apikeys/:key - Hapus API key
-- POST /api/admin/apikeys/:key/revoke - Revoke API key
-- POST /api/admin/logout - Logout dari WhatsApp
+- POST /api/admin/apikeys/generate - Generate API key baru (dengan QR code sendiri)
+- GET /api/admin/apikeys - List semua API keys dengan analytics
+- DELETE /api/admin/apikeys/:key - Hapus API key dan WhatsApp session-nya
+- POST /api/admin/apikeys/:key/revoke - Revoke API key tanpa hapus data
+- POST /api/admin/logout/:apiKey - Logout WhatsApp connection tertentu
+
+### Connection Management
+
+- GET /api/status - Cek status koneksi untuk session Anda (default: 'default')
+- GET /api/qr - Dapatkan QR code untuk scan WhatsApp (per session)
+
+### Session Management
+
+- GET /api/sessions - List semua sessions untuk API key Anda
+- DELETE /api/sessions/:sessionId - Hapus session tertentu
+
+**Cara Menggunakan:**
+```javascript
+// List all sessions
+GET /api/sessions
+Headers: X-API-Key: wa_abc123
+
+// Get QR for specific session
+GET /api/qr?sessionId=sales
+Headers: X-API-Key: wa_abc123
+
+// Delete specific session
+DELETE /api/sessions/sales
+Headers: X-API-Key: wa_abc123
+```
 
 ## Security
 
@@ -171,12 +263,14 @@ Memerlukan admin key di header: `X-Admin-Key: admin123`
 
 ## 📊 Statistics
 
-- **Total Endpoints**: 50+
+- **Total Endpoints**: 56+
 - **Message Types**: 8 (text, image, video, audio, document, sticker, location, contact)
+- **Upload Endpoints**: 6 (direct file upload support)
 - **Interactive Types**: 3 (buttons, lists, polls)
 - **Group Features**: 12 complete group management
 - **Profile Features**: 7 contact & profile operations
 - **Real-time Features**: Incoming messages, presence, typing indicators
+- **Multi-Session**: ✅ Unlimited sessions per API key
 
 ## 🛠️ Tech Stack
 
@@ -190,5 +284,8 @@ Memerlukan admin key di header: `X-Admin-Key: admin123`
 
 1. **README.md** - Quick start & overview (this file)
 2. **API_DOCUMENTATION.md** - Complete API reference with examples
-3. **TUTORIAL.md** - Step-by-step tutorial
-4. **Web UI** - Interactive documentation at `http://localhost:3000`
+3. **FILE_UPLOAD_GUIDE.md** - Complete guide for file upload feature ⭐ NEW!
+4. **MULTI_SESSION_EXAMPLE.md** - Multi-session tutorial with code examples
+5. **TUTORIAL.md** - Step-by-step tutorial
+6. **FEATURES.md** - Complete feature list
+7. **Web UI** - Interactive documentation at `http://localhost:3000`

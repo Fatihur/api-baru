@@ -22,7 +22,20 @@
     <div class="container">
         <section id="home" class="hero">
             <h2>Complete WhatsApp Gateway API</h2>
-            <p>50+ Endpoints | 8 Message Types | Full Baileys Coverage</p>
+            <p>50+ Endpoints | Multi-Session Support | Full Baileys Coverage</p>
+            
+            <div class="card" style="margin: 2rem 0; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h3 style="margin-top: 0; color: white;">🎯 Multi-Session Architecture</h3>
+                <p style="margin: 0.5rem 0;"><strong>Key Feature:</strong> Each API key has its own independent WhatsApp connection!</p>
+                <ul style="margin: 1rem 0; padding-left: 1.5rem;">
+                    <li>✅ <strong>Multiple WhatsApp Numbers:</strong> Connect different WhatsApp accounts per API key</li>
+                    <li>✅ <strong>Isolated Sessions:</strong> Each client has separate QR code and message history</li>
+                    <li>✅ <strong>Unlimited Scale:</strong> Add as many WhatsApp connections as you need</li>
+                    <li>✅ <strong>No Interference:</strong> Connections are completely independent</li>
+                </ul>
+                <p style="margin: 0.5rem 0; font-style: italic; opacity: 0.9;">Generate a new API key → Get your own QR code → Connect your WhatsApp → Start sending!</p>
+            </div>
+            
             <div class="status-card" id="statusCard">
                 <div class="status-indicator" id="statusIndicator"></div>
                 <span id="statusText">Checking connection...</span>
@@ -34,8 +47,8 @@
                     <div class="stat-label">Endpoints</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">8</div>
-                    <div class="stat-label">Message Types</div>
+                    <div class="stat-number">Multi</div>
+                    <div class="stat-label">Sessions</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number">12</div>
@@ -62,6 +75,7 @@
                 <div class="admin-content" id="adminContent" style="display: none;">
                     <div class="card">
                         <h3>Generate New API Key</h3>
+                        <p style="color: #666; margin-bottom: 1rem;">🎯 Each API key gets its own WhatsApp connection and QR code!</p>
                         <input type="text" id="appName" placeholder="Application Name (e.g., Mobile App)" class="input">
                         <button onclick="generateApiKey()" class="btn btn-success">Generate API Key</button>
                         <div id="newKeyResult"></div>
@@ -69,15 +83,18 @@
 
                     <div class="card">
                         <h3>Your API Keys</h3>
+                        <p style="color: #666; margin-bottom: 1rem;">Each API key has an independent WhatsApp session</p>
                         <button onclick="loadApiKeys()" class="btn btn-primary">Refresh List</button>
                         <div id="apiKeysList"></div>
                     </div>
 
                     <div class="card">
                         <h3>WhatsApp Connection</h3>
+                        <p style="color: #666; margin-bottom: 1rem;">⚠️ Note: To check connection or get QR code, use your API key in the Test section below</p>
                         <div id="qrCode"></div>
                         <button onclick="checkStatus()" class="btn btn-primary">Check Status / Get QR</button>
                         <button onclick="logout()" class="btn btn-danger">Logout WhatsApp</button>
+                        <small style="display: block; margin-top: 0.5rem; color: #666;">💡 Tip: Each API key needs to be authenticated separately with its own QR code</small>
                     </div>
                 </div>
             </div>
@@ -99,6 +116,17 @@
                 </div>
             </div>
 
+            <div class="card" style="border-left: 4px solid #667eea;">
+                <h3>🎯 Multi-Session Architecture</h3>
+                <p><strong>Key Feature:</strong> Each API key has its own independent WhatsApp connection!</p>
+                <ul style="margin: 1rem 0; padding-left: 1.5rem; line-height: 1.8;">
+                    <li>✅ <strong>Separate Sessions:</strong> Every API key gets a dedicated WhatsApp connection</li>
+                    <li>✅ <strong>Independent QR Codes:</strong> Each API key generates its own QR code for authentication</li>
+                    <li>✅ <strong>Isolated Storage:</strong> Auth data stored in <code>baileys_auth_info/{apiKey}/</code></li>
+                    <li>✅ <strong>No Conflicts:</strong> Multiple clients can run simultaneously without interference</li>
+                </ul>
+            </div>
+
             <div class="card">
                 <h3>Authentication</h3>
                 <p>All endpoints require API key in header or query:</p>
@@ -108,6 +136,51 @@ X-API-Key: your_api_key_here
 
 // Or Query Parameter
 ?apikey=your_api_key_here</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="card" style="background: #f8f9fa;">
+                <h3>🔌 Connection Management</h3>
+                
+                <h4>GET /api/status</h4>
+                <p>Check WhatsApp connection status for your API key</p>
+                <div class="code-block">
+                    <pre><code>GET /api/status
+Headers: X-API-Key: your_api_key</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <p><strong>Response (connected):</strong></p>
+                <div class="code-block">
+                    <pre><code>{
+  "success": true,
+  "connected": true,
+  "status": "connected",
+  "qr": null
+}</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+
+                <h4 style="margin-top: 1.5rem;">GET /api/qr</h4>
+                <p>Get QR code for WhatsApp authentication (each API key gets its own QR)</p>
+                <div class="code-block">
+                    <pre><code>GET /api/qr
+Headers: X-API-Key: your_api_key</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <p><strong>Response (QR available):</strong></p>
+                <div class="code-block">
+                    <pre><code>{
+  "success": true,
+  "qr": "data:image/png;base64,iVBORw0KG...",
+  "status": "qr_ready",
+  "message": "QR code available. Scan with WhatsApp mobile app."
+}</code></pre>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <p><strong>Usage:</strong> Display the QR code in an &lt;img&gt; tag:</p>
+                <div class="code-block">
+                    <pre><code>&lt;img src="data:image/png;base64,iVBORw0KG..." alt="QR Code" /&gt;</code></pre>
                     <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                 </div>
             </div>

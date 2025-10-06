@@ -2,21 +2,143 @@
 
 ## 📋 Table of Contents
 
-1. [Message Sending](#message-sending)
-2. [Interactive Messages](#interactive-messages)
-3. [Message Management](#message-management)
-4. [Group Management](#group-management)
-5. [Contact & Profile](#contact--profile)
-6. [Presence & Status](#presence--status)
-7. [Incoming Messages](#incoming-messages)
+1. [Multi-Session Architecture](#multi-session-architecture)
+2. [Authentication & Connection](#authentication--connection)
+3. [Message Sending](#message-sending)
+4. [Interactive Messages](#interactive-messages)
+5. [Message Management](#message-management)
+6. [Group Management](#group-management)
+7. [Contact & Profile](#contact--profile)
+8. [Presence & Status](#presence--status)
+9. [Incoming Messages](#incoming-messages)
 
 ---
 
-## Authentication
+## Multi-Session Architecture
+
+🎯 **Key Feature**: 1 API Key = Multiple WhatsApp Sessions!
+
+### How It Works
+
+- **Multiple Sessions per API Key**: One API key can manage multiple WhatsApp connections
+- **Session Isolation**: Each session has its own QR code and storage
+- **Flexible Management**: Use `sessionId` parameter to specify which session to use
+- **Default Session**: Omit `sessionId` to use the default session automatically
+
+### Storage Structure
+
+```
+baileys_auth_info/
+  └── {apiKey}/
+      ├── default/      # Default session
+      ├── sales/        # Sales session
+      └── support/      # Support session
+```
+
+### Session ID Parameter
+
+You can specify `sessionId` in 3 ways:
+
+1. **Body Parameter** (Recommended for POST)
+```json
+{
+  "sessionId": "sales",
+  "number": "628123456789",
+  "message": "Hello"
+}
+```
+
+2. **Query Parameter** (For GET requests)
+```
+GET /api/qr?sessionId=sales
+```
+
+3. **Header**
+```
+X-Session-Id: sales
+```
+
+### Benefits
+
+✅ **One API Key, Multiple WhatsApp Numbers**: Connect different accounts with one key  
+✅ **Easy Management**: Control all sessions from a single API key  
+✅ **Scalability**: Add unlimited sessions per API key  
+✅ **Isolation**: Each session has separate message history and status  
+
+---
+
+## Authentication & Connection
+
+### API Key Authentication
 
 All endpoints require API key authentication via header:
 ```
 X-API-Key: your_api_key_here
+```
+
+Or query parameter:
+```
+?apikey=your_api_key_here
+```
+
+### Connection Status & QR Code
+
+#### GET /api/status
+Get connection status for your API key
+```
+GET /api/status
+Headers: X-API-Key: your_api_key_here
+```
+
+Response when connected:
+```json
+{
+  "success": true,
+  "connected": true,
+  "status": "connected",
+  "qr": null
+}
+```
+
+Response when QR ready:
+```json
+{
+  "success": true,
+  "connected": false,
+  "status": "qr_ready",
+  "qr": "data:image/png;base64,iVBORw0KG..."
+}
+```
+
+#### GET /api/qr
+Get QR code for WhatsApp authentication
+```
+GET /api/qr
+Headers: X-API-Key: your_api_key_here
+```
+
+Response when QR available:
+```json
+{
+  "success": true,
+  "qr": "data:image/png;base64,iVBORw0KG...",
+  "status": "qr_ready",
+  "message": "QR code available. Scan with WhatsApp mobile app."
+}
+```
+
+Response when already connected:
+```json
+{
+  "success": false,
+  "message": "Already connected. No QR code needed.",
+  "status": "connected"
+}
+```
+
+**Usage**: Display the QR code data URL in an `<img>` tag:
+```html
+<img src="data:image/png;base64,iVBORw0KG..." alt="QR Code" />
 ```
 
 ---
@@ -441,6 +563,195 @@ POST /api/clear-messages
 
 ---
 
+## Admin Endpoints
+
+Admin endpoints require admin key authentication via header:
+```
+X-Admin-Key: admin123
+```
+
+### POST /api/admin/apikeys/generate
+Generate new API key
+```json
+{
+  "name": "My Application"
+}
+```
+
+Response:
+```json
+{
+  "success": true,
+  "apiKey": "wa_abc123...",
+  "message": "API key generated successfully"
+}
+```
+
+### GET /api/admin/apikeys
+List all API keys
+```
+GET /api/admin/apikeys
+Headers: X-Admin-Key: admin123
+```
+
+Response:
+```json
+{
+  "success": true,
+  "apiKeys": [
+    {
+      "key": "wa_abc123...",
+      "name": "My Application",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "lastUsed": "2024-01-01T12:00:00.000Z",
+      "requestCount": 150,
+      "active": true
+    }
+  ]
+}
+```
+
+### DELETE /api/admin/apikeys/:key
+Delete API key and its WhatsApp session
+```
+DELETE /api/admin/apikeys/wa_abc123...
+Headers: X-Admin-Key: admin123
+```
+
+Response:
+```json
+{
+  "success": true,
+  "message": "API key deleted"
+}
+```
+
+**Note**: This also logs out the WhatsApp connection and deletes authentication data.
+
+### POST /api/admin/apikeys/:key/revoke
+Revoke (deactivate) API key without deleting
+```json
+POST /api/admin/apikeys/wa_abc123.../revoke
+Headers: X-Admin-Key: admin123
+```
+
+Response:
+```json
+{
+  "success": true,
+  "message": "API key revoked"
+}
+```
+
+### POST /api/admin/logout/:apiKey
+Logout specific WhatsApp connection
+```
+POST /api/admin/logout/wa_abc123...
+Headers: X-Admin-Key: admin123
+```
+
+Response:
+```json
+{
+  "success": true,
+  "message": "Logged out successfully"
+}
+```
+
+**Note**: This disconnects the WhatsApp session but keeps the API key active.
+
+---
+
+## Session Management Endpoints
+
+These endpoints require API key authentication.
+
+### GET /api/sessions
+List all sessions for your API key
+```
+GET /api/sessions
+Headers: X-API-Key: your_api_key
+```
+
+Response:
+```json
+{
+  "success": true,
+  "sessions": [
+    {
+      "sessionId": "default",
+      "connected": true,
+      "status": "connected"
+    },
+    {
+      "sessionId": "sales",
+      "connected": true,
+      "status": "connected"
+    },
+    {
+      "sessionId": "support",
+      "connected": false,
+      "status": "qr_ready"
+    }
+  ]
+}
+```
+
+### DELETE /api/sessions/:sessionId
+Delete a specific session
+```
+DELETE /api/sessions/sales
+Headers: X-API-Key: your_api_key
+```
+
+Response:
+```json
+{
+  "success": true,
+  "message": "Session deleted successfully"
+}
+```
+
+**Note**: This logs out the session and removes all authentication data for that session.
+
+### GET /api/status with sessionId
+Check status of a specific session
+```
+GET /api/status?sessionId=sales
+Headers: X-API-Key: your_api_key
+```
+
+Response:
+```json
+{
+  "success": true,
+  "sessionId": "sales",
+  "connected": true,
+  "status": "connected",
+  "qr": null
+}
+```
+
+### GET /api/qr with sessionId
+Get QR code for a specific session
+```
+GET /api/qr?sessionId=sales
+Headers: X-API-Key: your_api_key
+```
+
+Response:
+```json
+{
+  "success": true,
+  "sessionId": "sales",
+  "qr": "data:image/png;base64,iVBORw0KG...",
+  "status": "qr_ready",
+  "message": "QR code available. Scan with WhatsApp mobile app."
+}
+```
+
+---
+
 ## Error Responses
 
 ### 401 Unauthorized
@@ -557,6 +868,12 @@ print_r($result);
 
 ## Complete Feature List
 
+🚀 **Multi-Session Architecture**:
+- Each API key has independent WhatsApp connection
+- Unlimited simultaneous connections
+- Isolated storage and message history
+- Per-client QR code authentication
+
 ✅ **50+ API Endpoints**:
 - 📤 8 Media sending types (text, image, video, audio, document, sticker, location, contact)
 - 🎮 3 Interactive messages (buttons, lists, polls)
@@ -565,6 +882,7 @@ print_r($result);
 - 👤 7 Contact/Profile features (check, picture, status, business profile, block/unblock)
 - 👁️ 4 Presence indicators (typing, recording, online status)
 - 📥 Incoming message webhook/storage
+- 🔐 6 Admin endpoints (API key management, logout)
 
 ---
 

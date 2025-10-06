@@ -1,7 +1,8 @@
 const apiKeyManager = require('./apiKeyManager');
 
-function requireApiKey(req, res, next) {
+async function requireApiKey(req, res, next) {
   const apiKey = req.headers['x-api-key'] || req.query.apikey;
+  const sessionId = req.body?.sessionId || req.query.sessionId || req.headers['x-session-id'] || 'default';
 
   if (!apiKey) {
     return res.status(401).json({
@@ -17,7 +18,17 @@ function requireApiKey(req, res, next) {
     });
   }
 
-  next();
+  try {
+    req.whatsappClient = await apiKeyManager.getWhatsAppClient(apiKey, sessionId);
+    req.apiKey = apiKey;
+    req.sessionId = sessionId;
+    next();
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to initialize WhatsApp client: ' + error.message
+    });
+  }
 }
 
 function requireAdminKey(req, res, next) {

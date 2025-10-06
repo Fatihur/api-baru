@@ -6,6 +6,28 @@
 
 ---
 
+## 🎯 Multi-Session Architecture
+
+### Key Feature: Independent WhatsApp Connections per API Key!
+
+| Feature | Description |
+|---------|-------------|
+| **Separate Sessions** | Every API key gets a dedicated WhatsApp connection |
+| **Independent QR Codes** | Each API key generates its own QR code for authentication |
+| **Isolated Storage** | Auth data stored in `baileys_auth_info/{apiKey}/` directory |
+| **No Interference** | Multiple clients can run simultaneously without conflicts |
+| **Unlimited Scale** | Add as many WhatsApp connections as you need |
+| **Per-Client State** | Each connection has separate message history and status |
+
+### Benefits
+- ✅ Connect multiple WhatsApp numbers simultaneously
+- ✅ Perfect for multi-tenant applications
+- ✅ Each client is completely isolated
+- ✅ Easy to manage and scale
+- ✅ No shared sessions or data leakage
+
+---
+
 ## ✅ Message Sending (8 Types)
 
 | Feature | Endpoint | Description |
@@ -96,16 +118,17 @@
 
 ---
 
-## 🔑 Admin & Management (6 Features)
+## 🔑 Admin & Management (8 Features)
 
 | Feature | Endpoint | Auth | Description |
 |---------|----------|------|-------------|
-| **Generate API Key** | `POST /api/admin/apikeys/generate` | Admin | Create new API key |
-| **List API Keys** | `GET /api/admin/apikeys` | Admin | View all API keys |
-| **Delete API Key** | `DELETE /api/admin/apikeys/:key` | Admin | Delete API key permanently |
-| **Revoke API Key** | `POST /api/admin/apikeys/:key/revoke` | Admin | Deactivate API key |
-| **Get Status** | `GET /api/status` | API Key | Check WhatsApp connection status |
-| **Logout** | `POST /api/admin/logout` | Admin | Disconnect from WhatsApp |
+| **Generate API Key** | `POST /api/admin/apikeys/generate` | Admin | Create new API key with own session |
+| **List API Keys** | `GET /api/admin/apikeys` | Admin | View all API keys with analytics |
+| **Delete API Key** | `DELETE /api/admin/apikeys/:key` | Admin | Delete API key and its session |
+| **Revoke API Key** | `POST /api/admin/apikeys/:key/revoke` | Admin | Deactivate API key without deleting |
+| **Get Status** | `GET /api/status` | API Key | Check WhatsApp connection for your key |
+| **Get QR Code** | `GET /api/qr` | API Key | Get QR code for WhatsApp authentication |
+| **Logout Specific** | `POST /api/admin/logout/:apiKey` | Admin | Disconnect specific WhatsApp session |
 
 ---
 
@@ -121,7 +144,8 @@
 | **Profile Features** | 7 |
 | **Presence Features** | 4 |
 | **Incoming Features** | 2 |
-| **Admin Features** | 6 |
+| **Admin Features** | 8 |
+| **Multi-Session** | ✅ Unlimited |
 
 ---
 
@@ -251,8 +275,9 @@ The API can be consumed from:
 | Interactive Messages | Full support | Limited |
 | Group Management | Full control | Limited |
 | API Keys | Unlimited | Limited |
+| Multi-Session | ✅ Unlimited simultaneous connections | ❌ One connection per account |
 | Approval | Not required | Facebook approval required |
-| Phone Linking | Simple QR scan | Complex setup |
+| Phone Linking | Simple QR scan per API key | Complex setup |
 
 ---
 
@@ -290,6 +315,7 @@ The API can be consumed from:
 - [x] API key system
 - [x] Admin panel UI
 - [x] Complete documentation
+- [x] **Multi-session support** (Each API key = separate WhatsApp connection)
 
 ### Future Enhancements 🔮
 - [ ] Webhook callbacks for incoming messages
@@ -299,7 +325,6 @@ The API can be consumed from:
 - [ ] Analytics dashboard
 - [ ] Rate limiting per API key
 - [ ] Message templates
-- [ ] Multi-session support
 - [ ] Docker deployment
 - [ ] Cloud deployment guides (AWS, GCP, Azure)
 
